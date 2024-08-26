@@ -1,0 +1,35 @@
+student-performance-analysis/
+│
+├── data/
+│   ├── raw/                      # Raw datasets (e.g., BMS SEM I.csv, BMS SEM II.csv)
+│   ├── processed/                # Processed datasets after cleaning and feature engineering
+│
+├── notebooks/                    # Jupyter notebooks for data exploration and analysis
+│   ├── 01_data_exploration.ipynb
+│   ├── 02_data_preprocessing.ipynb
+│   ├── 03_feature_engineering.ipynb
+│   ├── 04_modeling.ipynb
+│
+├── src/                          # Source code for the project
+│   ├── __init__.py               # Initialize the src module
+│   ├── data_preprocessing.py     # Script for data cleaning and preprocessing
+│   ├── feature_engineering.py    # Script for feature extraction and selection
+│   ├── modeling.py               # Script for building and evaluating ML models
+│   ├── predictions.py            # Script for making predictions using the trained model
+│
+├── app/
+│   ├── app.py                    # Main Streamlit app file
+│   ├── pages/                    # Additional Streamlit pages if needed
+│
+├── models/                       # Directory to save trained models
+│   ├── model.pkl
+│
+├── tests/                        # Unit tests for the codebase
+│   ├── test_data_preprocessing.py
+│   ├── test_feature_engineering.py
+│   ├── test_modeling.py
+│
+├── requirements.txt              # Python dependencies
+├── README.md                     # Project overview and instructions
+├── streamlit_app.py              # Entry point for Streamlit deployment
+└── .gitignore                    # Files and directories to ignore in version control
