@@ -1,7 +1,7 @@
 student-performance-analysis/
 │
 ├── data/
-│   ├── raw/                      # Raw datasets (e.g., BMS SEM I.csv, BMS SEM II.csv)
+│   ├── raw/                      # Raw datasets (if needed for reference or initial analysis)
 │   ├── processed/                # Processed datasets after cleaning and feature engineering
 │
 ├── notebooks/                    # Jupyter notebooks for data exploration and analysis
@@ -16,10 +16,9 @@ student-performance-analysis/
 │   ├── feature_engineering.py    # Script for feature extraction and selection
 │   ├── modeling.py               # Script for building and evaluating ML models
 │   ├── predictions.py            # Script for making predictions using the trained model
+│   ├── mongodb.py                # Script for MongoDB connection and data retrieval
 │
-├── app/
-│   ├── app.py                    # Main Streamlit app file
-│   ├── pages/                    # Additional Streamlit pages if needed
+├── pages/                        # Additional Streamlit pages if needed
 │
 ├── models/                       # Directory to save trained models
 │   ├── model.pkl
@@ -28,8 +27,9 @@ student-performance-analysis/
 │   ├── test_data_preprocessing.py
 │   ├── test_feature_engineering.py
 │   ├── test_modeling.py
+│   ├── test_mongodb.py            # Tests for MongoDB connection and data retrieval
 │
+├── app.py
 ├── requirements.txt              # Python dependencies
 ├── README.md                     # Project overview and instructions
-├── streamlit_app.py              # Entry point for Streamlit deployment
 └── .gitignore                    # Files and directories to ignore in version control
