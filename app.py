@@ -10,7 +10,7 @@ from web_pages import home,dataset,analysis,prediction,about
 
 def main():
     # Load and preprocess data
-    st.markdown("### :blue[Student Performance Analysis and Prediction]")
+    st.markdown("## :blue[Student Performance Analysis and Prediction]")
     st.markdown("---")
     # creating a side bar 
     with st.sidebar:
