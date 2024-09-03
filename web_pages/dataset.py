@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import plotly.subplots as sp
 
 raw_data_path = os.path.join('data','raw','BMS_raw.csv')
 process_data_path = os.path.join('data','processed',"BMS_process.csv")
@@ -19,6 +20,7 @@ def dataset():
     raw_df = pd.read_csv(raw_data_path)
     st.dataframe(raw_df.head())
 
+# ------------------------------------------------------------------------------------
     text = f"""
 #### 1. General Information
 
@@ -36,6 +38,7 @@ def dataset():
     # showing column_info
     st.markdown("- **Column Names and Data Types**")
     st.dataframe(column_info,use_container_width = True)
+    st.write("**Conclusion :** Some subject marks are recorded as object data types due to the presence of grace marks, which are denoted by an asterisk ('*').")
 
     # merging the column's value 
     missing_value_info = pd.DataFrame({
@@ -47,13 +50,14 @@ def dataset():
     st.dataframe(missing_value_info,use_container_width = True)
 
     # creating the note 
-    st.write("**Note :** After performing `Data Preprocessing` below dataset is generated")
+    st.write("**Note :** The dataset below was generated after performing `Data Preprocessing`.")
 
     # reading the process dataset
     st.write("#### Processed Data")
     process_df = pd.read_csv(process_data_path)
     st.dataframe(process_df.head())
 
+# --------------------------------------------------------------------------------------------
     st.write("#### 2. Descriptive Statistics")
 
     # checking minimum of TotalMarksObtained, CreditsEarned, Percentage, SGPA
@@ -116,9 +120,69 @@ def dataset():
 {process_df['Grade'].value_counts()}
 """)
     
+# --------------------------------------------------------------------------------------------------------
     st.write("#### 3. Data Distribution and Visualization")
 
-    # for col in process_df.select_dtypes([np.number]).columns:
-    #     fig = px.histogram(process_df,x = col)
-    #     fig.update_layout(title = col)
-    #     st.plotly_chart(fig)
+    figs = []
+    for i,col in enumerate(process_df.drop(['StudentId','Remark','Grade','TotalMarks'], axis=1).columns,1):
+        fig = px.histogram(process_df,x = col,nbins = 30,title = f"Histogram of {col}")
+        figs.append(fig)
+
+    st.markdown("- **Distribution of numerical columns**")
+    for fig in figs:
+        st.plotly_chart(fig)
+
+    # creating boxplot 
+    fig_TMO = px.box(process_df, y='TotalMarksObtained', title='Boxplot of TotalMarksObtained')
+    fig_PCT = px.box(process_df, y='Percentage', title='Boxplot of Percentage')
+    fig = sp.make_subplots(rows = 1,cols = 2,subplot_titles=['TotalMarksObtained', 'Percentage'])
+
+    for trace in fig_TMO.data:
+        trace.update(marker_color='red')
+        fig.add_trace(trace,row = 1,col = 1)
+    
+    for trace in fig_PCT.data:
+        trace.update(marker_color='blue')
+        fig.add_trace(trace,row = 1,col = 2)
+
+    fig.update_layout(height=600, width=800)
+    st.markdown("- **Boxplot of TotalMarksObtained and Percentage**")
+    st.plotly_chart(fig)
+
+    # creating clountplot
+    st.markdown("- **Countplot of Remark and Grade**")
+
+    # remark 
+    fig_remark_count = px.bar(process_df['Remark'].value_counts(),y = 'Remark',color = process_df['Remark'].unique(),title = "Countplot of Remark")
+    fig_remark_count.update_layout(xaxis_title='Remark',yaxis_title='Count')
+    st.plotly_chart(fig_remark_count)
+
+    # grade
+    fig_grade_count = px.bar(process_df['Grade'].value_counts(),y = 'Grade',color = process_df['Grade'].unique(),title = "Countplot of Grade")
+    fig_grade_count.update_layout(xaxis_title='Grade',yaxis_title='Count')
+    st.plotly_chart(fig_grade_count)
+
+
+
+
+    
+    # hist_col = process_df.drop(['StudentId','Remark','Grade','TotalMarksObtained'], axis=1).columns
+    # num_cols = 2
+    # num_rows = (len(hist_col) + num_cols - 1) // num_cols # number of rows needed
+    # fig = sp.make_subplots(rows = num_rows,cols = num_cols,subplot_titles = [f"Histogram of {col}" for col in hist_col])
+    # for i,col in enumerate(hist_col,1):
+    #     row = (i - 1) // num_cols + 1
+    #     col_idx = (i - 1) % num_cols + 1
+    #     hist = px.histogram(process_df, x=col,title = f"Histogram of {col}")
+    #     for trace in hist.data:
+    #         fig.add_trace(trace,row = row,col = col_idx)
+    
+    # fig.update_layout(
+    # height=2000, 
+    # width=1000,
+    # title_text = "Distribution of Columns"
+    # )
+    
+    # st.plotly_chart(fig)
+
+
