@@ -1,5 +1,6 @@
 import pickle
 import pandas as pd
+from src.logger import logging
 
 def load_model():
     """Load the trained model from the models directory."""

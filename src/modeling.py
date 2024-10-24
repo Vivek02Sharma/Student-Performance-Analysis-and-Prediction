@@ -1,6 +1,7 @@
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import pickle
+from src.logger import logging
 
 def train_model(X, y):
     """Train a machine learning model."""

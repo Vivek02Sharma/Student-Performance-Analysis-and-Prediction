@@ -17,6 +17,7 @@ student-performance-analysis/
 │   ├── modeling.py               # Script for building and evaluating ML models
 │   ├── predictions.py            # Script for making predictions using the trained model
 │   ├── mongodb.py                # Script for MongoDB connection and data retrieval
+|   ├── logger.py 
 │
 ├── pages/                        # Additional Streamlit pages if needed
 │
@@ -28,7 +29,11 @@ student-performance-analysis/
 │   ├── test_feature_engineering.py
 │   ├── test_modeling.py
 │   ├── test_mongodb.py            # Tests for MongoDB connection and data retrieval
-│
+│   
+├── .streamlit/
+|   ├── secrets.toml
+|   ├── config.toml
+|
 ├── app.py
 ├── requirements.txt              # Python dependencies
 ├── README.md                     # Project overview and instructions

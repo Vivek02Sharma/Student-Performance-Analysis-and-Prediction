@@ -1,15 +1,17 @@
-import streamlit as st
 import os
 import pandas as pd
-import numpy as np
+import streamlit as st
 import plotly.express as px
 import plotly.subplots as sp
+import warnings
+warnings.filterwarnings("ignore")
+
 
 raw_data_path = os.path.join('data','raw','BMS_raw.csv')
 process_data_path = os.path.join('data','processed',"BMS_process.csv")
 
 def dataset():
-    st.markdown("### Dive Deep into Our Student Performance Dataset")
+    st.markdown("### Dive Deep into Student Performance Dataset")
     st.markdown("""
 ~ ' Without data, you're just another person with an opinion '
 --- `W. Edwards Deming`
@@ -32,7 +34,7 @@ def dataset():
     # merging columns information
     column_info = pd.DataFrame({
     'Column Name': raw_df.columns,
-    'Data Type': raw_df.dtypes
+    'Data Type': raw_df.dtypes.astype(str)
     }).reset_index(drop=True)
     
     # showing column_info
@@ -57,7 +59,7 @@ def dataset():
     process_df = pd.read_csv(process_data_path)
     st.dataframe(process_df.head())
 
-# --------------------------------------------------------------------------------------------
+# # --------------------------------------------------------------------------------------------
     st.write("#### 2. Descriptive Statistics")
 
     # checking minimum of TotalMarksObtained, CreditsEarned, Percentage, SGPA
@@ -124,8 +126,8 @@ def dataset():
     st.write("#### 3. Data Distribution and Visualization")
 
     figs = []
-    for i,col in enumerate(process_df.drop(['StudentId','Remark','Grade','TotalMarks'], axis=1).columns,1):
-        fig = px.histogram(process_df,x = col,nbins = 30,title = f"Histogram of {col}")
+    for col in process_df.drop(['StudentId','Remark','Grade','TotalMarks'], axis=1).columns:
+        fig = px.histogram(process_df,x = col,nbins = 30,title = f"Histogram of {col}",color = 'Remark',barmode='overlay')
         figs.append(fig)
 
     st.markdown("- **Distribution of numerical columns**")
@@ -162,10 +164,34 @@ def dataset():
     fig_grade_count.update_layout(xaxis_title='Grade',yaxis_title='Count')
     st.plotly_chart(fig_grade_count)
 
+    # pie chart of pass and fail
+    st.markdown("- **Pie chart of Pass and Fail**")
+    remark = process_df['Remark'].value_counts(normalize = True)
+    fig_pie = px.pie(remark,
+                     values = remark.values,
+                     names = remark.index,
+                     title = 'Percentage of Pass and Fail',
+                     hole = 0.3
+                    )
+    fig_pie.update_traces(
+    textinfo = 'percent',  
+    textfont_size = 16
+    )
+    st.plotly_chart(fig_pie)
 
 
 
     
+
+
+
+
+
+
+
+
+
+
     # hist_col = process_df.drop(['StudentId','Remark','Grade','TotalMarksObtained'], axis=1).columns
     # num_cols = 2
     # num_rows = (len(hist_col) + num_cols - 1) // num_cols # number of rows needed
