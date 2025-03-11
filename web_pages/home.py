@@ -3,9 +3,6 @@ from web_pages.prediction import model_prediction
 from web_pages import prediction
 
 def home():
-    import streamlit as st
-
-def home():
     # Introduction
     st.markdown(
         """

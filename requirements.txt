@@ -1,4 +1,10 @@
 pandas
-scikit-learn
-streamlit
+matplotlib
 plotly
+seaborn
+scikit-learn
+xgboost
+streamlit
+streamlit-option-menu
+openpyxl 
+xlsxwriter

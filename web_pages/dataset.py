@@ -154,13 +154,13 @@ def dataset():
     # creating clountplot
     st.markdown("- **Countplot of Remark and Grade**")
 
-    # remark 
-    fig_remark_count = px.bar(process_df['Remark'].value_counts(),y = 'Remark',color = process_df['Remark'].unique(),title = "Countplot of Remark")
+    # remark
+    fig_remark_count = px.bar(process_df['Remark'].value_counts(), color = process_df['Remark'].unique(), title = "Countplot of Remark") # Removed y='Remark'
     fig_remark_count.update_layout(xaxis_title='Remark',yaxis_title='Count')
     st.plotly_chart(fig_remark_count)
 
     # grade
-    fig_grade_count = px.bar(process_df['Grade'].value_counts(),y = 'Grade',color = process_df['Grade'].unique(),title = "Countplot of Grade")
+    fig_grade_count = px.bar(process_df['Grade'].value_counts(), color = process_df['Grade'].unique(), title = "Countplot of Grade") # Removed y='Grade'
     fig_grade_count.update_layout(xaxis_title='Grade',yaxis_title='Count')
     st.plotly_chart(fig_grade_count)
 
@@ -168,16 +168,31 @@ def dataset():
     st.markdown("- **Pie chart of Pass and Fail**")
     remark = process_df['Remark'].value_counts(normalize = True)
     fig_pie = px.pie(remark,
-                     values = remark.values,
-                     names = remark.index,
-                     title = 'Percentage of Pass and Fail',
-                     hole = 0.3
+                    values = remark.values,
+                    names = remark.index,
+                    title = 'Percentage of Pass and Fail',
+                    hole = 0.3
                     )
     fig_pie.update_traces(
-    textinfo = 'percent',  
+    textinfo = 'percent',
     textfont_size = 16
     )
     st.plotly_chart(fig_pie)
+
+    # # pie chart of pass and fail
+    # st.markdown("- **Pie chart of Pass and Fail**")
+    # remark = process_df['Remark'].value_counts(normalize = True)
+    # fig_pie = px.pie(remark,
+    #                  values = remark.values,
+    #                  names = remark.index,
+    #                  title = 'Percentage of Pass and Fail',
+    #                  hole = 0.3
+    #                 )
+    # fig_pie.update_traces(
+    # textinfo = 'percent',  
+    # textfont_size = 16
+    # )
+    # st.plotly_chart(fig_pie)
 
 
 

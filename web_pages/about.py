@@ -1,9 +1,6 @@
 import streamlit as st
 
 def about():
-    import streamlit as st
-
-def about():
     # Introduction to the project
     st.header("Project Overview")
     st.write("""
@@ -28,7 +25,7 @@ def about():
         coursework, and examination results. The primary goal is to understand how these features correlate with
         student performance.
     """)
-    
+
     st.subheader("Key Features in the Dataset")
     st.write("""
         - **Student ID** : Unique identifier for each student.
