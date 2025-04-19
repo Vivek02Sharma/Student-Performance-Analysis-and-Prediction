@@ -1,8 +1,5 @@
 import streamlit as st
 import pymongo
-import bcrypt
-import re
-from datetime import datetime
 
 def get_database():
     client = pymongo.MongoClient("mongodb://localhost:27017/")
@@ -166,6 +163,5 @@ def main_login():
         elif st.session_state['current_page'] == "login":
             login_page()
 
-# if __name__ == "__main__":
 st.set_page_config(page_title="Login Page", page_icon="🔐", layout="wide")
 main_login()

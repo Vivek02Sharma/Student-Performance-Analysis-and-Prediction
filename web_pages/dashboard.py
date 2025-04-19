@@ -41,6 +41,61 @@ def get_grade_color(grade):
     }
     return grade_colors.get(grade, '#888888')  # Gray for unknown grades
 
+def get_risk_level(percentage, trend, failed_subjects):
+    # Define risk thresholds
+    if percentage < 40:
+        risk_level = "High Risk"
+        color = "#ff0000"  # Red
+        message = "Student is severely underperforming and at high risk of failing."
+    elif percentage < 50:
+        if trend < -5 or failed_subjects >= 2:
+            risk_level = "High Risk"
+            color = "#ff0000"  # Red
+            message = "Student shows declining performance and multiple subject failures."
+        else:
+            risk_level = "Moderate Risk"
+            color = "#ff9900"  # Orange
+            message = "Student performance is below average but may improve with support."
+    elif percentage < 60:
+        if trend < -10 or failed_subjects >= 1:
+            risk_level = "Moderate Risk"
+            color = "#ff9900"  # Orange
+            message = "Student shows declining trend or has failed subjects."
+        else:
+            risk_level = "Low Risk"
+            color = "#ffcc00"  # Yellow
+            message = "Student performance is average but needs improvement in some areas."
+    else:
+        if failed_subjects >= 1:
+            risk_level = "Low Risk"
+            color = "#ffcc00"  # Yellow
+            message = "Student is performing well overall but has challenges in specific subjects."
+        else:
+            risk_level = "No Risk"
+            color = "#00cc00"  # Green
+            message = "Student is performing well with no significant risk factors."
+            
+    return risk_level, color, message
+
+def analyze_subject_risk(subject_df, threshold=40):
+    at_risk_subjects = subject_df[subject_df['Percentage'] < threshold]
+    return at_risk_subjects
+
+
+def generate_excel_report(student_name, sem1_df, sem2_df):
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        sem1_df.to_excel(writer, index=False, sheet_name='Semester 1')
+        sem2_df.to_excel(writer, index=False, sheet_name='Semester 2')
+        workbook = writer.book
+        worksheet1 = writer.sheets['Semester 1']
+        worksheet2 = writer.sheets['Semester 2']
+        for sheet in [worksheet1, worksheet2]:
+            for col_num, value in enumerate(sem1_df.columns.values):
+                sheet.set_column(col_num, col_num, 18)
+    output.seek(0)
+    return output
+
 def student_marks_dashboard():
     st.markdown("""
     <style>
@@ -178,7 +233,9 @@ def student_marks_dashboard():
         # Visualization Section
         st.subheader("Performance Visualization")
 
-        tab1, tab2, tab3 = st.tabs(["Overall Comparison", "Subject Analysis", "Grade Distribution"])
+        tab1, tab2 = st.tabs(["Overall Comparison", "Subject Analysis", 
+                                    # "Grade Distribution"
+                                    ])
 
         with tab1:
             fig = go.Figure()
@@ -266,73 +323,73 @@ def student_marks_dashboard():
                 fig.update_layout(height=400)
                 st.plotly_chart(fig, use_container_width=True)
 
-        with tab3:
-            # Create a radar chart for grades
-            categories = ['Overall Grade', 'Communication', 'Technical Knowledge',
-                          'Problem Solving', 'Team Work', 'Time Management']
+        # with tab3:
+        #     # Create a radar chart for grades
+        #     # categories = ['Overall Grade', 'Communication', 'Technical Knowledge',
+        #     #               'Problem Solving', 'Team Work', 'Time Management']
 
-            # --- Calculate values_sem1 dynamically ---
-            values_sem1 = [sem1_data.get('SGPA', 0)]
-            subject_count_sem1 = 0
-            for key in sem1_data:
-                if key.startswith('INT_') and subject_count_sem1 < 5:
-                    subject_code = key[4:]
-                    internal = sem1_data.get(key, 0)
-                    external = sem1_data.get(f'EXT_{subject_code}', 0)
-                    total = internal + external
-                    percentage = (total / 100) * 100 if total <= 100 else 100
-                    scaled_percentage = (percentage / 100) * 10
-                    values_sem1.append(round(scaled_percentage, 1))
-                    subject_count_sem1 += 1
-            # Pad with 0s if less than 5 subjects are found
-            while len(values_sem1) < 6:
-                values_sem1.append(0)
+        #     # --- Calculate values_sem1 dynamically ---
+        #     values_sem1 = [sem1_data.get('SGPA', 0)]
+        #     subject_count_sem1 = 0
+        #     for key in sem1_data:
+        #         if key.startswith('INT_') and subject_count_sem1 < 5:
+        #             subject_code = key[4:]
+        #             internal = sem1_data.get(key, 0)
+        #             external = sem1_data.get(f'EXT_{subject_code}', 0)
+        #             total = internal + external
+        #             percentage = (total / 100) * 100 if total <= 100 else 100
+        #             scaled_percentage = (percentage / 100) * 10
+        #             values_sem1.append(round(scaled_percentage, 1))
+        #             subject_count_sem1 += 1
+        #     # Pad with 0s if less than 5 subjects are found
+        #     while len(values_sem1) < 6:
+        #         values_sem1.append(0)
 
-            values_sem2 = [sem2_data.get('SGPA', 0)]
-            subject_count_sem2 = 0
-            for key in sem2_data:
-                if key.startswith('INT_') and subject_count_sem2 < 5:
-                    subject_code = key[4:]
-                    internal = sem2_data.get(key, 0)
-                    external = sem2_data.get(f'EXT_{subject_code}', 0)
-                    total = internal + external
-                    percentage = (total / 100) * 100 if total <= 100 else 100
-                    scaled_percentage = (percentage / 100) * 10
-                    values_sem2.append(round(scaled_percentage, 1))
-                    subject_count_sem2 += 1
-            while len(values_sem2) < 6:
-                values_sem2.append(0)
+        #     values_sem2 = [sem2_data.get('SGPA', 0)]
+        #     subject_count_sem2 = 0
+        #     for key in sem2_data:
+        #         if key.startswith('INT_') and subject_count_sem2 < 5:
+        #             subject_code = key[4:]
+        #             internal = sem2_data.get(key, 0)
+        #             external = sem2_data.get(f'EXT_{subject_code}', 0)
+        #             total = internal + external
+        #             percentage = (total / 100) * 100 if total <= 100 else 100
+        #             scaled_percentage = (percentage / 100) * 10
+        #             values_sem2.append(round(scaled_percentage, 1))
+        #             subject_count_sem2 += 1
+        #     while len(values_sem2) < 6:
+        #         values_sem2.append(0)
 
-            fig = go.Figure()
+            # fig = go.Figure()
 
-            fig.add_trace(go.Scatterpolar(
-                r=values_sem1,
-                theta=categories,
-                fill='toself',
-                name='Semester 1',
-                line_color='#3366cc'
-            ))
+            # fig.add_trace(go.Scatterpolar(
+            #     r=values_sem1,
+            #     theta=categories,
+            #     fill='toself',
+            #     name='Semester 1',
+            #     line_color='#3366cc'
+            # ))
 
-            fig.add_trace(go.Scatterpolar(
-                r=values_sem2,
-                theta=categories,
-                fill='toself',
-                name='Semester 2',
-                line_color='#ff9900'
-            ))
+            # fig.add_trace(go.Scatterpolar(
+            #     r=values_sem2,
+            #     theta=categories,
+            #     fill='toself',
+            #     name='Semester 2',
+            #     line_color='#ff9900'
+            # ))
 
-            fig.update_layout(
-                polar=dict(
-                    radialaxis=dict(
-                        visible=True,
-                        range=[0, 10]
-                    )),
-                showlegend=True,
-                title="Skill Assessment Radar",
-                height=450
-            )
+            # fig.update_layout(
+            #     polar=dict(
+            #         radialaxis=dict(
+            #             visible=True,
+            #             range=[0, 10]
+            #         )),
+            #     showlegend=True,
+            #     title="Skill Assessment Radar",
+            #     height=450
+            # )
 
-            st.plotly_chart(fig, use_container_width=True)
+            # st.plotly_chart(fig, use_container_width=True)
 
         # Subject-wise Analysis
         st.subheader("Subject-wise Performance")
@@ -439,289 +496,4 @@ def student_marks_dashboard():
                 use_container_width=True
             )
 
-    #    # Progress over time - Line chart showing improvement trends
-    #     st.subheader("Academic Progress")
-
-    #     # Create a mock dataframe with monthly performance
-    #     months = ["Jan 2022", "Feb 2022", "Mar 2022", "Apr 2022", "May 2022", "Jun 2022"]
-
-    #     # Create a simulated performance curve based on the two semester data points
-    #     start_point = sem1_data.get('Percentage', 80)
-    #     end_point = sem2_data.get('Percentage', 80)
-
-    #     # Create a simple curve with some variation
-    #     performance = []
-    #     for i, month in enumerate(months):
-    #         # Linear interpolation with some random variation
-    #         progress = start_point + (end_point - start_point) * (i / (len(months) - 1))
-    #         # Add some random noise (-2 to +2)
-    #         noise = np.random.uniform(-2, 2)
-    #         performance.append(max(0, min(100, progress + noise)))
-
-    #     # Create attendance data (simulated)
-    #     attendance = [95, 92, 88, 91, 93, 90]
-
-    #     # Create the dataframe
-    #     progress_df = pd.DataFrame({
-    #         'Month': months,
-    #         'Performance': performance,
-    #         'Attendance': attendance
-    #     })
-
-    #     st.dataframe(progress_df)
-    #     # Plot with dual Y-axis
-    #     fig = go.Figure()
-
-    #     fig.add_trace(go.Scatter(
-    #         x=progress_df['Month'],
-    #         y=progress_df['Performance'],
-    #         name='Academic Performance',
-    #         mode='lines+markers',
-    #         marker=dict(size=10, color='#3366cc'),
-    #         line=dict(width=3, color='#3366cc')
-    #     ))
-
-    #     fig.add_trace(go.Scatter(
-    #         x=progress_df['Month'],
-    #         y=progress_df['Attendance'],
-    #         name='Attendance %',
-    #         mode='lines+markers',
-    #         marker=dict(size=10, color='#ff9900'),
-    #         line=dict(width=3, color='#ff9900'),
-    #         yaxis='y2'
-    #     ))
-
-    #     fig.update_layout(
-    #         title='Performance & Attendance Trends',
-    #         xaxis=dict(title='Month'),
-    #         yaxis=dict(
-    #             title='Performance (%)',
-    #             range=[70, 100],
-    #             titlefont=dict(color='#3366cc'),
-    #             tickfont=dict(color='#3366cc')
-    #         ),
-    #         yaxis2=dict(
-    #             title='Attendance (%)',
-    #             range=[70, 100],
-    #             titlefont=dict(color='#ff9900'),
-    #             tickfont=dict(color='#ff9900'),
-    #             anchor='x',
-    #             overlaying='y',
-    #             side='right'
-    #         ),
-    #         legend=dict(x=0.01, y=0.99),
-    #         height=400
-    #     )
-
-    #     st.plotly_chart(fig, use_container_width=True)
-
-    #     # Student Rank & Percentile (simulated)
-    #     st.subheader("Class Ranking")
-
-    #     col1, col2, col3 = st.columns(3)
-
-    #     with col1:
-    #         with st.container(border=True):
-    #             # Simulated rank gauge
-    #             rank = 5  # Simulated rank
-    #             total_students = 60  # Simulated total
-
-    #             fig = go.Figure(go.Indicator(
-    #                 mode="gauge+number",
-    #                 value=rank,
-    #                 title={'text': "Class Rank"},
-    #                 gauge={
-    #                     'axis': {'range': [None, total_students], 'tickwidth': 1, 'tickcolor': "darkblue"},
-    #                     'bar': {'color': "#3366cc"},
-    #                     'bgcolor': "white",
-    #                     'borderwidth': 2,
-    #                     'bordercolor': "gray",
-    #                     'steps': [
-    #                         {'range': [0, total_students / 3], 'color': '#d4f1dd'},
-    #                         {'range': [total_students / 3, 2 * total_students / 3], 'color': '#e7fcef'},
-    #                         {'range': [2 * total_students / 3, total_students], 'color': '#f5f5f5'}
-    #                     ],
-    #                     'threshold': {
-    #                         'line': {'color': "red", 'width': 4},
-    #                         'thickness': 0.75,
-    #                         'value': rank
-    #                     }
-    #                 }
-    #             ))
-
-    #             fig.update_layout(height=250)
-    #             st.plotly_chart(fig, use_container_width=True)
-
-    #     with col2:
-    #         with st.container(border=True):
-    #             # Percentile gauge
-    #             percentile = 95  # Simulated percentile
-
-    #             fig = go.Figure(go.Indicator(
-    #                 mode="gauge+number",
-    #                 value=percentile,
-    #                 title={'text': "Percentile"},
-    #                 gauge={
-    #                     'axis': {'range': [None, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
-    #                     'bar': {'color': "#ff9900"},
-    #                     'bgcolor': "white",
-    #                     'borderwidth': 2,
-    #                     'bordercolor': "gray",
-    #                     'steps': [
-    #                         {'range': [0, 33], 'color': '#fff8e6'},
-    #                         {'range': [33, 66], 'color': '#ffefbf'},
-    #                         {'range': [66, 100], 'color': '#ffe599'}
-    #                     ],
-    #                     'threshold': {
-    #                         'line': {'color': "green", 'width': 4},
-    #                         'thickness': 0.75,
-    #                         'value': percentile
-    #                     }
-    #                 }
-    #             ))
-
-    #             fig.update_layout(height=250)
-    #             st.plotly_chart(fig, use_container_width=True)
-
-    #     with col3:
-    #         with st.container(border=True):
-    #             # CGPA/GPA gauge
-    #             cgpa = overall_sgpa  # Use calculated overall SGPA
-
-    #             fig = go.Figure(go.Indicator(
-    #                 mode="gauge+number",
-    #                 value=cgpa,
-    #                 title={'text': "CGPA"},
-    #                 number={'suffix': "/10"},
-    #                 gauge={
-    #                     'axis': {'range': [None, 10], 'tickwidth': 1, 'tickcolor': "darkblue"},
-    #                     'bar': {'color': "#4bc0c0"},
-    #                     'bgcolor': "white",
-    #                     'borderwidth': 2,
-    #                     'bordercolor': "gray",
-    #                     'steps': [
-    #                         {'range': [0, 4], 'color': '#e6f5f5'},
-    #                         {'range': [4, 7], 'color': '#ccebeb'},
-    #                         {'range': [7, 10], 'color': '#b3e0e0'}
-    #                     ],
-    #                     'threshold': {
-    #                         'line': {'color': "green", 'width': 4},
-    #                         'thickness': 0.75,
-    #                         'value': cgpa
-    #                     }
-    #                 }
-    #             ))
-
-    #             fig.update_layout(height=250)
-    #             st.plotly_chart(fig, use_container_width=True)
-
-    #     # Recommendations section
-    #     st.subheader("Recommendations & Feedback")
-
-    #     # Find weakest and strongest subjects from both semesters
-    #     all_subjects = {}
-
-    #     for key in sem1_data:
-    #         if key.startswith('INT_'):
-    #             subject_code = key[4:]
-    #             internal = sem1_data.get(key, 0)
-    #             external = sem1_data.get(f'EXT_{subject_code}', 0)
-    #             total = internal + external
-    #             all_subjects[subject_code] = {'total': total, 'name': get_subject_name(subject_code)}
-
-    #     for key in sem2_data:
-    #         if key.startswith('INT_'):
-    #             subject_code = key[4:]
-    #             internal = sem2_data.get(key, 0)
-    #             external = sem2_data.get(f'EXT_{subject_code}', 0)
-    #             total = internal + external
-    #             all_subjects[subject_code] = {'total': total, 'name': get_subject_name(subject_code)}
-
-    #     # Find min and max
-    #     min_subject = min(all_subjects.items(), key=lambda x: x[1]['total'])
-    #     max_subject = max(all_subjects.items(), key=lambda x: x[1]['total'])
-
-    #     col1, col2 = st.columns(2)
-
-    #     with col1:
-    #         with st.container(border=True):
-    #             st.markdown("### Areas of Strength")
-    #             st.write(f"🌟 Your strongest subject is **{max_subject[1]['name']}** with a score of **{max_subject[1]['total']}**.")
-    #             # Example - You might need more robust logic to determine these recommendations based on actual subject codes and names.
-    #             strongest_subject_name = max_subject[1]['name']
-    #             if "Business Communication" in strongest_subject_name:
-    #                 st.write("💪 You demonstrate excellent understanding in Business Communication.")
-    #             st.write("👍 Your time management skills are reflected in consistent performance.")  # Generic recommendation
-
-    #     with col2:
-    #         with st.container(border=True):
-    #             st.markdown("### Areas for Improvement")
-    #             st.write(f"📝 You may want to focus more on **{min_subject[1]['name']}** where your score is **{min_subject[1]['total']}**.")
-    #             weakest_subject_name = min_subject[1]['name']
-    #             if "Business Mathematics" in weakest_subject_name:
-    #                 st.write("💡 Consider joining study groups for collaborative learning in Business Mathematics.")
-    #             st.write("📚 Set aside additional practice time for problem-solving subjects.")  # Generic recommendation
-
-    #     # Downloadable Report section
-    #     st.subheader("Download Report")
-
-    #     report_name = f"Student_Academic_Report_{student_id}_{datetime.now().strftime('%Y%m%d')}.xlsx"
-
-    #     col1, col2 = st.columns([3, 1])
-
-    #     with col1:
-    #         st.write("Generate a comprehensive Excel report with all your academic details including subject-wise breakdown, semester comparisons, and performance analytics.")
-
-    #     with col2:
-    #         if st.button("Generate Report", key="report_button"):
-    #             # Prepare data for Excel report
-    #             excel_data = BytesIO()
-    #             writer = pd.ExcelWriter(excel_data, engine='xlsxwriter')
-
-    #             # Semester 1 Dataframe
-    #             sem1_df = pd.DataFrame([sem1_data])  # Make it a list to be DataFrame
-    #             sem1_df.to_excel(writer, sheet_name='Semester 1 Overview', index=False)
-
-    #             # Semester 2 Dataframe
-    #             sem2_df = pd.DataFrame([sem2_data])  # Make it a list to be DataFrame
-    #             sem2_df.to_excel(writer, sheet_name='Semester 2 Overview', index=False)
-
-    #             # Subject-wise performance for Sem 1 and 2 (using existing subject_df from tabs)
-    #             subject_df_sem1_report = pd.DataFrame(columns=['Subject', 'Code', 'Internal', 'External', 'Total', 'Percentage'])
-    #             for key in sem1_data:
-    #                 if key.startswith('INT_'):
-    #                     subject_code = key[4:]
-    #                     subject_name = get_subject_name(subject_code)
-    #                     internal = sem1_data.get(key, 0)
-    #                     external = sem1_data.get(f'EXT_{subject_code}', 0)
-    #                     total = internal + external
-    #                     percentage = (total / 100) * 100
-    #                     subject_df_sem1_report = pd.concat([subject_df_sem1_report, pd.DataFrame([{'Subject': subject_name, 'Code': subject_code, 'Internal': internal, 'External': external, 'Total': total, 'Percentage': percentage}])], ignore_index=True)
-    #             subject_df_sem1_report.to_excel(writer, sheet_name='Sem 1 Subjects', index=False)
-
-    #             subject_df_sem2_report = pd.DataFrame(columns=['Subject', 'Code', 'Internal', 'External', 'Total', 'Percentage'])
-    #             for key in sem2_data:
-    #                 if key.startswith('INT_'):
-    #                     subject_code = key[4:]
-    #                     subject_name = get_subject_name(subject_code)
-    #                     internal = sem2_data.get(key, 0)
-    #                     external = sem2_data.get(f'EXT_{subject_code}', 0)
-    #                     total = internal + external
-    #                     percentage = (total / 100) * 100
-    #                     subject_df_sem2_report = pd.concat([subject_df_sem2_report, pd.DataFrame([{'Subject': subject_name, 'Code': subject_code, 'Internal': internal, 'External': external, 'Total': total, 'Percentage': percentage}])], ignore_index=True)
-    #             subject_df_sem2_report.to_excel(writer, sheet_name='Sem 2 Subjects', index=False)
-
-    #             writer.close()
-    #             excel_data.seek(0)
-
-    #             st.download_button(
-    #                 label="Download Excel Report",
-    #                 data=excel_data,
-    #                 file_name=report_name,
-    #                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    #             )
-    #         else:
-    #             st.warning("Dashboard content is not available because data for both semesters is required for full display.")
-
-    #     # Footer
-    #     st.markdown('<div class="footer">© 2025 University Management System</div>', unsafe_allow_html=True)
+        

@@ -8,3 +8,5 @@ streamlit
 streamlit-option-menu
 openpyxl 
 xlsxwriter
+pytest
+pytest-html

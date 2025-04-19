@@ -1,18 +1,18 @@
 import pandas as pd
 from src.logger import logging
 
-# this function add grace marks
 def adding_grace(row):
     try:
-        # if '*' present in row
+        if row is None or str(row).strip() == "":
+            return None
         if '*' in str(row):
             num = str(row).split('*')
             return int(num[0]) + int(num[1])
-        # '*' not present in row
         else:
             return int(row)
     except ValueError:
         return None
+
     
 # converting the data type of the column which contain grace('*') marks
 def apply_grace_marks(df,categorical_columns):

@@ -16,7 +16,7 @@ def student_progress_analysis():
             st.error(f"No data found for student ID: {student_id}")
             return
 
-        print(sem1_data)
-        print(sem2_data)
+        # print(sem1_data)
+        # print(sem2_data)
     except:
         pass

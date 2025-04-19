@@ -1,6 +1,4 @@
 import streamlit as st
-from web_pages.prediction import model_prediction
-from web_pages import prediction
 
 def home():
     # Introduction
